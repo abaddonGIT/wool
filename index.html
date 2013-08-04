@@ -16,7 +16,9 @@
             
         </div>
         <script type="text/javascript">
-           
+            var tpl = "<div>Hi {{=it.name}}!</div><div>{{=it.age || ''}}</div>";
+
+            console.log(Wool.render(tpl, { 'name': 'Миня', 'age': 25 }));
         </script>
     </body>
 </html>
