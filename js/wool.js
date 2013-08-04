@@ -3,57 +3,50 @@
  * @author Abaddon <abaddongit@gmail.com>
  * @version 1.0.0
  * ***************************************************/
-/*global window, $, jQuery, document */
+
 (function () {
     "use strict";
     var Wool = {
-        temp: undefined,
-        render: undefined,
-        repDelimeters: /\{\{=([\s\S]+?)\}\}/g,
-        ventDelimeters: /\{\{([\s\S]+?)\}\}/g,
-        condiDelimeters: /\{\{\?(\?)?\s*([\s\S]*?)\s*\}\}/g,
-        name: 'it'
+        config: {
+            repDelimeters: /\{\{([\s\S]+?)\}\}/g,
+            ventDelimeters: /\{\%([\s\S]+?)\%\}/g,
+            condiDelimeters: /\{\%\?(\?)?\s*([\s\S]*?)\s*\%\}/g,
+            st: "'+(",
+            en: ")+'",
+            skip: /$^/
+        }
     };
-
-    (function(){
-      return this || (0,eval)('this');
-    }()).Wool = Wool;
-
-    var startend = {
-		append: { start: "'+(",      end: ")+'",      endencode: "||'').toString().encodeHTML()+'" },
-		split:  { start: "';out+=(", end: ");out+='", endencode: "||'').toString().encodeHTML();out+='"}
-	}, skip = /$^/;
+    //Это черная магия (делаем объект глобальным)
+    (function () {
+        return this || (0, eval)('this');
+    } ()).Wool = Wool;
 
     /*
     * @param tpl {String} код шаблона
     * @param data {Object} данные замены
     */
-    Wool.temp = function (tpl, data) {
-        var str = tpl, cse = Wool.append ? startend.append : startend.split;
+    Wool.render = function (tpl, c) {
+        var str = tpl, c = c || Wool.config;
 
         str = ("var out='" + str
-                .replace(Wool.repDelimeters || skip, function (m, code) {
-                    console.log(m);
-                    return cse.start + unescape(code) + cse.end;
+                .replace(c.repDelimeters || c.skip, function (m, code) {//обработка обычных переменных
+                    return c.st + unescape(code) + c.en;
                 })
-                .replace(Wool.condiDelimeters || skip, function(m, elsecase, code) {
-				    return elsecase ?
+                .replace(c.condiDelimeters || c.skip, function (m, elsecase, code) {//обработка условий
+                    return elsecase ?
 					(code ? "';}else if(" + unescape(code) + "){out+='" : "';}else{out+='") :
 					(code ? "';if(" + unescape(code) + "){out+='" : "';}out+='")
-			    })
-                .replace(Wool.ventDelimeters || skip, function(m, code) {
-				    return "';" + unescape(code) + "out+='";
-			    }) + "'; return out;");
+                })
+                .replace(c.ventDelimeters || c.skip, function (m, code) {//обработка цикла
+                    return "';" + unescape(code) + "out+='";
+                }) + "'; return out;");
 
-                try {
-			        return new Function(Wool.name, str);
-		        } catch (e) {
-			        if (typeof console !== 'undefined') console.log("Could not create a template function: " + str);
-			        throw e;
-		        }
-
-        //return str;
-
-
+        //тут создаем новую функцию в качестве переменных которой выступает преобразованный шаблон и объект параметров для замены
+        try {
+            return new Function('w', str);
+        } catch (e) {
+            if (typeof console !== 'undefined') console.log("Произошла печалька. Не могу создать ф-ю из строки" + str);
+            throw e;
+        }
     }
-}());
+} ());
