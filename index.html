@@ -19,6 +19,9 @@
             var tpl = "{%? w.name %}<div>Меня зовут {{w.name}}!</div><div>мне {{w.age}} лет</div>{%??%}aospaosp{%?%}";
             var t = Wool.render(tpl);
             console.log(t({ 'name': 'Миня', 'age': 25 }));
+            var tpl = "{% for(var prop in w) { %}<div>{{prop}}</div>{% } %}";
+            var t = Wool.render(tpl);
+            console.log(t({"name":"Jake"}));
         </script>
     </body>
 </html>
